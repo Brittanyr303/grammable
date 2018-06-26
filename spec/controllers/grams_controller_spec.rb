@@ -4,6 +4,10 @@ RSpec.describe GramsController, type: :controller do
   describe "grams#destroy action" do
     it "shouldn't allow users who didn't create the gram to destroy it" do
       gram = FactoryBot.create(:gram)
+      user = FactoryBot.create(:user)
+      sign_in user
+      delete :destroy, params: { id: gram.id }
+      expect(response).to have_http_status(:forbidden)
     end
 
     it "shouldn't let unauthenticated users destroy a gram" do
@@ -149,7 +153,13 @@ end
       user = FactoryBot.create(:user)
       sign_in user
 
-      post :create, params: { gram: { message: 'Hello!' } }
+      post :create, params: {
+    gram: {
+      message: 'Hello!',
+      picture: fixture_file_upload("/picture.png", 'image/png')
+    }
+  }
+  
       expect(response).to redirect_to root_path
 
       gram = Gram.last
